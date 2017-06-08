@@ -3,7 +3,10 @@
  */
 public class AvroReader {
 
-    public static void read() {
+    // Singleton
+    private AvroReader() {}
+
+    public static void run() {
 
     }
 }

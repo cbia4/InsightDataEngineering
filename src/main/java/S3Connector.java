@@ -16,13 +16,15 @@ public class S3Connector {
     // Singleton
     private S3Connector(){}
 
-    public static void retrieve() {
+    public static void run() {
 
         // returns default credentials
         AWSCredentials credentials = new ProfileCredentialsProvider().getCredentials();
 
+        // TODO: Replace AmazonS3Client with non-deprecated equivalent
         AmazonS3 s3client = new AmazonS3Client(credentials);
 
+        // TODO: Read String literals from configuration
         String bucketName = "castle-kafka-export";
         ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withMaxKeys(2);
         ListObjectsV2Result result;

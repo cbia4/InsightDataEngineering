@@ -9,11 +9,12 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 
-class EventProducer {
+public class EventProducer {
 
-    private Producer<String, String> producer;
+    // Singleton
+    private EventProducer() {}
 
-    EventProducer() {
+    public static void run() {
         Properties props = new Properties();
         props.put("bootstrap.servers","localhost:9092");
         props.put("acks","all");
@@ -23,16 +24,18 @@ class EventProducer {
         props.put("buffer.memory",33554432);
         props.put("key.serializer","org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer","org.apache.kafka.common.serialization.StringSerializer");
-        producer = new KafkaProducer<>(props);
-    }
+        Producer<String,String> producer = new KafkaProducer<>(props);
 
-    void run() {
+        // Publish 100 integers to Kafka "Event" Topic
         for(int i = 0; i < 100; i++) {
             producer.send(new ProducerRecord<>("event", Integer.toString(i), Integer.toString(i)));
         }
 
         producer.close();
     }
+
+
+
 
 
 }

@@ -7,6 +7,6 @@ public class S3ConnectorTest {
 
     @Test
     public void testS3Connection() {
-        S3Connector.retrieve();
+        S3Connector.run();
     }
 }

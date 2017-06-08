@@ -7,7 +7,6 @@ public class EventProducerTest {
 
     @Test
     public void testProducer() {
-        EventProducer ep = new EventProducer();
-        ep.run();
+        EventProducer.run();
     }
 }
