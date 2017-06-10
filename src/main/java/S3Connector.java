@@ -40,8 +40,6 @@ public class S3Connector {
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .build();
 
-        String bucketName = "castle-kafka-export";
-        String keyName = "events/event_v1/2017-05/2017-05-31-event_v1-000726-1497023490196.part.avro";
 
         S3Object object = s3client.getObject(bucket,key);
 
