@@ -1,9 +1,16 @@
-import java.io.File;
-import java.io.IOException;
+import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileStream;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.DatumReader;
 
-import org.apache.avro.file.DataFileWriter;
-import org.apache.avro.io.DatumWriter;
-import org.apache.avro.specific.SpecificDatumWriter;
+import java.io.File;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.EOFException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by colinbiafore on 6/8/17.
@@ -13,36 +20,23 @@ public class AvroReader {
     // Singleton
     private AvroReader() {}
 
-    public static void run() {
+    public static List<String> deserialize(InputStream inputStream) throws IOException {
 
-        // Create some users and set their fields
-        User user1 = new User();
-        user1.setName("Alyssa");
-        user1.setFavoriteNumber(256);
-        // Leave favorite color null
+        List<String> eventList = new ArrayList<>();
+        Schema schema = new Schema.Parser().parse(new File("src/main/resources/event_schema.avsc"));
+        DatumReader<GenericRecord> datumReader = new GenericDatumReader<>(schema);
+        DataFileStream<GenericRecord> dataFileReader = new DataFileStream<>(inputStream,datumReader);
 
-        // Alternate constructor
-        User user2 = new User("Ben", 7, "red");
-
-        // Construct via builder
-        User user3 = User.newBuilder()
-                .setName("Charlie")
-                .setFavoriteColor("blue")
-                .setFavoriteNumber(null)
-                .build();
-
-        // Serialize user1, user2, and user3 to disk
-        DatumWriter<User> userDatumWriter = new SpecificDatumWriter<User>(User.class);
-        DataFileWriter<User> dataFileWriter = new DataFileWriter<User>(userDatumWriter);
-        try {
-            dataFileWriter.create(user1.getSchema(), new File("../resources/users.avro"));
-            dataFileWriter.append(user1);
-            dataFileWriter.append(user2);
-            dataFileWriter.append(user3);
-            dataFileWriter.close();
-        } catch (IOException e) {
-            System.err.println("File Creation Failed. Exiting.");
-            System.exit(-1);
+        GenericRecord event = null;
+        while(dataFileReader.hasNext()) {
+            try {
+                event = dataFileReader.next(event);
+                eventList.add(event.toString());
+            } catch (EOFException e) {
+                break;
+            }
         }
+
+        return eventList;
     }
 }
