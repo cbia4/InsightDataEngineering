@@ -14,7 +14,7 @@ public class EventProducer {
     // Singleton
     private EventProducer() {}
 
-    public static void run() {
+    public static void produce(List<String> eventList) {
         Properties props = new Properties();
         props.put("bootstrap.servers","localhost:9092");
         props.put("acks","all");
@@ -26,9 +26,9 @@ public class EventProducer {
         props.put("value.serializer","org.apache.kafka.common.serialization.StringSerializer");
         Producer<String,String> producer = new KafkaProducer<>(props);
 
-        // Publish 100 integers to Kafka "Event" Topic
-        for(int i = 0; i < 100; i++) {
-            producer.send(new ProducerRecord<>("event", Integer.toString(i), Integer.toString(i)));
+
+        for(String event : eventList) {
+            producer.send(new ProducerRecord<String, String>("event",event,event));
         }
 
         producer.close();
