@@ -8,13 +8,11 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-
 public class EventProducer {
 
-    // Singleton
-    private EventProducer() {}
+    private Producer<String,byte[]> producer;
 
-    public static void produce(List<String> eventList) {
+    public EventProducer() {
         Properties props = new Properties();
         props.put("bootstrap.servers","localhost:9092");
         props.put("acks","all");
@@ -22,17 +20,20 @@ public class EventProducer {
         props.put("batch.size",16384);
         props.put("linger.ms",1);
         props.put("buffer.memory",33554432);
-        props.put("key.serializer","org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer","org.apache.kafka.common.serialization.StringSerializer");
-        Producer<String,String> producer = new KafkaProducer<>(props);
+        props.put("key.serializer","org.apache.kafka.common.serialization.IntegerSerializer");
+        props.put("value.serializer","org.apache.kafka.common.serialization.ByteArraySerializer");
+        this.producer = new KafkaProducer<>(props);
+    }
 
+    public void send(byte[] record) {
+        producer.send(new ProducerRecord<>("streams-event-input", record));
+    }
 
-        for(String event : eventList) {
-            producer.send(new ProducerRecord<String, String>("event",event,event));
-        }
-
+    public void close() {
         producer.close();
     }
+
+
 
 
 
