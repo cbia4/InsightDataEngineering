@@ -2,4 +2,5 @@
 *.iml
 *.iws
 target/
+src/main/resources/
 .DS_Store
