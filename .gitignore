@@ -4,3 +4,5 @@
 target/
 src/main/resources/
 .DS_Store
+config.properties
+
