@@ -24,12 +24,9 @@ public class AvroUtility {
     private Injection<GenericRecord,byte[]> recordInjection;
 
     public AvroUtility(String path) throws IOException {
-        //this.schemaFile = new File(path);
         this.schema = new Schema.Parser().parse(new File(path));
         this.recordInjection = GenericAvroCodecs.toBinary(this.schema);
     }
-
-    public Schema getSchema() { return schema; }
 
     public byte[] encode(GenericRecord record) {
         return recordInjection.apply(record);
