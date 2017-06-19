@@ -36,18 +36,12 @@ public class AvroUtility {
         return recordInjection.invert(bytes).get();
     }
 
-    public List<GenericRecord> getRecords(InputStream inputStream) throws IOException  {
+    public Iterator<GenericRecord> getRecords(InputStream inputStream) throws IOException  {
 
-        List<GenericRecord> eventList = new ArrayList<>();
         DatumReader<GenericRecord> datumReader = new GenericDatumReader<>(this.schema);
         DataFileStream<GenericRecord> dataFileStream = new DataFileStream<>(inputStream, datumReader);
         Iterator<GenericRecord> recordIterator = dataFileStream.iterator();
-
-        while(recordIterator.hasNext()) {
-            eventList.add(recordIterator.next());
-        }
-
-        return eventList;
+        return recordIterator;
 
     }
 
