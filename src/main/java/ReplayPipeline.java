@@ -3,8 +3,10 @@ import org.apache.avro.generic.GenericRecord;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+
 
 /**
  * Created by colinbiafore on 6/8/17.
@@ -37,22 +39,35 @@ public class ReplayPipeline {
         EventProducer eventProducer = new EventProducer();
 
         // Create a list to hold generic records & a tmp variable for record streams
-        List<GenericRecord> recordList;
+        Iterator<GenericRecord> recordIterator;
         InputStream recordStream;
+
+
+        // Time
+        long ingestStart = System.nanoTime();
 
         // Move events from S3 -> Kafka
         for (String objectKey : keys) {
-
+            long iterStart = System.nanoTime();
             recordStream = s3Client
                     .getObject(bucket,objectKey)
                     .getObjectContent(); // Get a stream of object content from S3
 
-            recordList = avro.getRecords(recordStream); // Deserialize stream into list of generic records
+            recordIterator = avro.getRecords(recordStream); // get an iterator for the list of records
 
-            for (GenericRecord record : recordList) {
-                eventProducer.send(avro.encode(record)); // send records one by one to Kafka for processing
+            while (recordIterator.hasNext()) {
+                eventProducer.send(avro.encode(recordIterator.next())); // send records one by one to Kafka for processing
             }
+            long iterEnd = System.nanoTime();
+            long iterTime = (iterEnd - iterStart) / 1000000000;
+            System.out.println("Time Elapsed for File: " + iterTime + " seconds");
         }
+
+        long ingestEnd = System.nanoTime();
+
+        long ingestTime = (ingestEnd - ingestStart) / 1000000000;
+
+        System.out.println("Time Elapsed: " + ingestTime + " seconds");
 
         // clean up client connections
         eventProducer.close();
