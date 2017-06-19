@@ -1,6 +1,4 @@
-import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
@@ -17,20 +15,20 @@ import java.util.Properties;
 public class EventToSignal {
 
 
-    public static long getTenantId(GenericRecord record) {
-        return (long) record.get("tenant_id");
-    }
-
     public static void main(String[] args) throws Exception {
 
         // Set Stream Properties
         Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "event-processing"); // Required
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"); // Required
+        props.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.ByteArray().getClass().getName());
         props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.ByteArray().getClass().getName()); // Topic Value Deserializer Type
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-        AvroUtility avro = new AvroUtility("src/main/resources/event_schema.avsc");
+        AvroUtility eventAvro = new AvroUtility("src/main/resources/event_schema.avsc");
+        AvroUtility countrySignalAvro = new AvroUtility("src/main/resources/signal_schema.avsc");
+
+        CountryStore countryStore = new CountryStore("src/main/resources/signal_schema.avsc");
 
         // Instantiate a stream builder
         KStreamBuilder kStreamBuilder = new KStreamBuilder();
@@ -38,17 +36,14 @@ public class EventToSignal {
         // Read from streams-event-input
         KStream<String, byte[]> event = kStreamBuilder.stream("streams-event-input");
 
-        // Transform
-        KStream<String,GenericRecord> bytesToRecord = event.map((key, value) -> new KeyValue<>(key,avro.decode(value)));
-        KStream<String,Long> recordToTenantId = bytesToRecord.map((key,value) -> new KeyValue<>(key, getTenantId(value)));
+        // filter for new countries and create signals (this includes byte encoding/decoding)
+        KStream<String,byte[]> eventToSignals = event.map((key, value) -> new KeyValue<>(key,eventAvro.decode(value)))
+                .filter((key,value) -> countryStore.test(key,value))
+                .map((key,value) -> new KeyValue<>(key,countryStore.createNewCountrySignal(value)))
+                .map((key,value) -> new KeyValue<>(key,countrySignalAvro.encode(value)));
 
-        Serde<String> stringSerde = Serdes.String();
-        Serde<Long> longSerde = Serdes.Long();
-
-        // Write mapping to
-        recordToTenantId.to(stringSerde,longSerde,"streams-event-output");
-
-
+        // Write signals to output stream
+        eventToSignals.to("streams-event-output");
 
         KafkaStreams streams = new KafkaStreams(kStreamBuilder, props);
         streams.start();
