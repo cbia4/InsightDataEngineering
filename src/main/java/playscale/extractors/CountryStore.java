@@ -1,18 +1,17 @@
+package playscale.extractors;
+
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.streams.kstream.Predicate;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 
-/**
- * Created by colinbiafore on 6/18/17.
- */
-public class CountryStore implements Predicate<String,GenericRecord> {
+
+public class CountryStore implements Predicate<Long,GenericRecord> {
 
     private HashMap<Long,HashSet<String>> userCountryStore;
     private Schema signalSchema;
@@ -23,7 +22,6 @@ public class CountryStore implements Predicate<String,GenericRecord> {
     }
 
     // Extract the country_iso_code from a generic record
-    @Nullable
     private String getIsoCode(GenericRecord record) {
         GenericRecord requestContext = (GenericRecord) record.get("request_context");
         GenericRecord ipData = (GenericRecord) requestContext.get("ip_data");
@@ -33,7 +31,7 @@ public class CountryStore implements Predicate<String,GenericRecord> {
     }
 
     @Override
-    public boolean test(String key, GenericRecord record) {
+    public boolean test(Long key, GenericRecord record) {
 
         Long userId = (Long) record.get("user_id"); // Use object type - user_id may be null
         String countryIsoCode = getIsoCode(record);
