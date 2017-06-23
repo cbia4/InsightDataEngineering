@@ -1,5 +1,6 @@
 package playscale;
 
+import org.apache.log4j.Logger;
 import playscale.consumers.SignalConsumer;
 import playscale.extractors.EventToSignal;
 import playscale.producers.EventProducer;
@@ -10,10 +11,16 @@ import java.io.InputStream;
 import java.util.Properties;
 
 
+
 /**
  * Created by colinbiafore on 6/8/17.
  */
 public class PlayScale {
+
+    private static final Logger logger = Logger.getLogger(PlayScale.class);
+    private static final String PRODUCER = "PRODUCER";
+    private static final String STREAM = "STREAM";
+    private static final String CONSUMER = "CONSUMER";
 
     private static void printUsage() {
         System.out.println("Usage:");
@@ -26,6 +33,7 @@ public class PlayScale {
 
         // Make sure user specified the app segment they want to run
         if(args.length < 1 || args.length > 2) {
+            logger.error("Incorrect Number of Arguments.");
             printUsage();
             System.exit(0);
         }
@@ -39,25 +47,26 @@ public class PlayScale {
 
         // Run the associated application segment (Producer, Stream, Consumer)
         String appType = args[0];
-        if(appType.toUpperCase().equals("PRODUCER")) {
-            System.out.println("Starting Producer instance.");
+        if(appType.toUpperCase().equals(PRODUCER)) {
+            logger.info("Starting Producer instance.");
             EventProducer eventProducer = new EventProducer(properties);
             eventProducer.run();
         }
 
-        else if(appType.toUpperCase().equals("STREAM")) {
-            System.out.println("Starting Stream instance.");
+        else if(appType.toUpperCase().equals(STREAM)) {
+            logger.info("Starting Stream instance.");
             EventToSignal ets = new EventToSignal(properties);
             ets.run();
         }
 
-        else if(appType.toUpperCase().equals("CONSUMER")) {
-            System.out.println("Starting Consumer instance.");
+        else if(appType.toUpperCase().equals(CONSUMER)) {
+            logger.info("Starting Consumer instance.");
             SignalConsumer signalConsumer = new SignalConsumer(properties);
             signalConsumer.run();
         }
 
         else {
+            logger.error("No option: " + appType);
             printUsage();
             System.exit(0);
         }
