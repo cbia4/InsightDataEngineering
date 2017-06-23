@@ -2,7 +2,10 @@
 *.iml
 *.iws
 target/
-src/main/resources/
 .DS_Store
 config.properties
 
+src/main/resources/signal_schema.avsc
+src/main/resources/event_schema.avsc
+event_schema.avsc
+signal_schema.avsc
