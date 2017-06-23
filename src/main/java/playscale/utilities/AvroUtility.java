@@ -1,3 +1,5 @@
+package playscale.utilities;
+
 import com.twitter.bijection.Injection;
 import com.twitter.bijection.avro.GenericAvroCodecs;
 import org.apache.avro.Schema;
