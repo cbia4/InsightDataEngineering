@@ -1,4 +1,5 @@
-# Data Engineering Project - Scalable Data Replay
-An ingestion system designed to replay historical data (stored in S3 - in Avro format) and process it using Kafka Streams
+# PlayScale - Scalable Data Replay - A Consulting Project
+PlayScale is a plug and play tool to easily replay offline datasets and test/implement stream processing topologies
+using Apache Kafka and Kafka Streams
 
-Note: This repository represents a general use case of a consulting project.
+
