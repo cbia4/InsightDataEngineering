@@ -1,3 +1,5 @@
+package playscale.utilities;
+
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
@@ -16,7 +18,7 @@ import java.util.List;
 /**
  * Created by colinbiafore on 6/16/17.
  */
-public class S3Client {
+public class S3Utility {
 
 
     private AmazonS3 client;
@@ -24,13 +26,13 @@ public class S3Client {
     private String secret;
     private String region;
 
-    public S3Client(String key, String secret, String region) {
+    public S3Utility(String key, String secret, String region) {
         this.key = key;
         this.secret = secret;
         this.region = region;
         AWSCredentials credentials = new BasicAWSCredentials(this.key,this.secret);
         ClientConfiguration configuration = new ClientConfiguration();
-        configuration.setMaxConnections(500);
+        configuration.setMaxConnections(1000000);
         this.client = AmazonS3Client.builder()
                 .withRegion(this.region)
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
@@ -41,7 +43,7 @@ public class S3Client {
 
     public S3Object getObject(String bucket, String key) { return client.getObject(bucket,key); }
 
-    public void shutdownS3Client() { client.shutdown(); }
+    public void shutdown() { client.shutdown(); }
 
     public List<String> getKeyList(String bucket, String prefix) {
         List<S3ObjectSummary> summaries = null;
