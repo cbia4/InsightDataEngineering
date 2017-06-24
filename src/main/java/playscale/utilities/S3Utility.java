@@ -11,6 +11,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,20 +22,15 @@ import java.util.List;
 public class S3Utility {
 
 
+    private final Logger logger = Logger.getLogger(S3Utility.class);
     private AmazonS3 client;
-    private String key;
-    private String secret;
-    private String region;
 
     public S3Utility(String key, String secret, String region) {
-        this.key = key;
-        this.secret = secret;
-        this.region = region;
-        AWSCredentials credentials = new BasicAWSCredentials(this.key,this.secret);
+        AWSCredentials credentials = new BasicAWSCredentials(key,secret);
         ClientConfiguration configuration = new ClientConfiguration();
         configuration.setMaxConnections(1000000);
         this.client = AmazonS3Client.builder()
-                .withRegion(this.region)
+                .withRegion(region)
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withClientConfiguration(configuration)
                 .build();
@@ -46,12 +42,11 @@ public class S3Utility {
     public void shutdown() { client.shutdown(); }
 
     public List<String> getKeyList(String bucket, String prefix) {
+
         List<S3ObjectSummary> summaries = null;
         List<String> keys = new ArrayList<String>();
 
         try {
-
-
             ObjectListing listing = client.listObjects(bucket,prefix);
             summaries = listing.getObjectSummaries();
 
@@ -59,18 +54,17 @@ public class S3Utility {
                 listing = client.listNextBatchOfObjects(listing);
                 summaries.addAll(listing.getObjectSummaries());
             }
-
-
         } catch (AmazonServiceException ase) {
-            System.out.println("AmazonServiceException thrown!!");
+            logger.error("Amazon Service Exception. Exiting.");
             ase.printStackTrace();
             System.exit(-1);
         } catch (AmazonClientException ace) {
-            System.out.println("AmazonClientException thrown!!");
+            logger.error("Amazon Client Exception. Exiting.");
             ace.printStackTrace();
             System.exit(-1);
         }
 
+        // filter out any random objects that are not in avro format
         String avroFileExtension = "part.avro";
         for(S3ObjectSummary objectSummary : summaries) {
             if(objectSummary.getKey().endsWith(avroFileExtension))
@@ -79,9 +73,4 @@ public class S3Utility {
 
         return keys;
     }
-
-
-
-
-
 }
