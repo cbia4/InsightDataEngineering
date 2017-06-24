@@ -5,6 +5,7 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.log4j.Logger;
 import playscale.utilities.AvroUtility;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.util.Properties;
 
 public class SignalConsumer {
 
+    private final Logger logger = Logger.getLogger(SignalConsumer.class);
     private Consumer<Long,byte[]> consumer;
     private Properties properties;
     private AvroUtility avro;
@@ -48,7 +50,8 @@ public class SignalConsumer {
             ConsumerRecords<Long, byte[]> records = consumer.poll(pollRate);
             for (ConsumerRecord<Long, byte[]> record : records) {
                 GenericRecord r = avro.decode(record.value());
-                System.out.println("key: " + record.key());
+                if(logger.isDebugEnabled())
+                    logger.debug("key: " + record.key() + ", value: " +r.toString());
             }
         }
     }

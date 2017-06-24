@@ -9,12 +9,14 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
+import org.apache.log4j.Logger;
 import playscale.utilities.AvroUtility;
 import playscale.utilities.S3Utility;
 
 
 public class EventProducer {
 
+    private final Logger logger = Logger.getLogger(EventProducer.class);
     private Producer<Long,byte[]> producer;
     private Properties properties;
 
@@ -78,7 +80,7 @@ public class EventProducer {
         // Move events from S3 -> Kafka
         for (String objectKey : keys) {
 
-            System.out.println("Downloading: " + objectKey);
+            logger.info("Downloading: " + objectKey);
             long iterStart = System.nanoTime();
 
             // Download file
@@ -86,13 +88,13 @@ public class EventProducer {
                     .getObject(bucket,objectKey)
                     .getObjectContent();
 
-            System.out.println("Done. Download took " + ( (System.nanoTime() - iterStart) / 1000000 ) + " ms.\nDeserializing: " + objectKey);
+            logger.info("Done. Download took " + ( (System.nanoTime() - iterStart) / 1000000 ) + " ms.\nDeserializing: " + objectKey);
             iterStart = System.nanoTime();
 
             // Deserialize file and return iterator
             recordIterator = avro.getRecords(recordStream);
 
-            System.out.println("Done. Deserialization took " + ( (System.nanoTime() - iterStart) / 1000000 ) + " ms.\nSending Records.");
+            logger.info("Done. Deserialization took " + ( (System.nanoTime() - iterStart) / 1000000 ) + " ms.\nSending Records.");
             iterStart = System.nanoTime();
 
             long ctr = 0;
@@ -105,19 +107,19 @@ public class EventProducer {
                 producer.send(new ProducerRecord<>(topic,tenantId,avro.encode(record)));
             }
 
-            System.out.println("Done. Sending Records took " + ( (System.nanoTime() - iterStart) / 1000000 ) + " ms.\nSent " + ctr + " Records.");
-            System.out.println("---------------------------------------------");
+            logger.info("Done. Sending Records took " + ( (System.nanoTime() - iterStart) / 1000000 ) + " ms.\nSent " + ctr + " Records.");
+            System.out.println();
         }
 
         long ingestEnd = System.nanoTime();
         long ingestTime = (ingestEnd - ingestStart) / 1000000000;
-        System.out.println("Job Complete.");
-        System.out.println("------Statistics------");
-        System.out.println("Time Elapsed: " + ingestTime + " seconds");
-        System.out.println("Files Read: " + keys.size() + " files");
-        System.out.println("Records Sent: " + totalRecords + " records");
-        System.out.println("Throughput: " + (totalRecords / ingestTime) + " records/second");
-        System.out.println("----------------------");
+        logger.info("Job Complete.");
+        logger.info("------Statistics------");
+        logger.info("Time Elapsed: " + ingestTime + " seconds");
+        logger.info("Files Read: " + keys.size() + " files");
+        logger.info("Records Sent: " + totalRecords + " records");
+        logger.info("Throughput: " + (totalRecords / ingestTime) + " records/second");
+        logger.info("----------------------");
 
         // clean up client connections
         s3.shutdown();

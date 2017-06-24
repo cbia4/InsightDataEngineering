@@ -23,10 +23,10 @@ public class PlayScale {
     private static final String CONSUMER = "CONSUMER";
 
     private static void printUsage() {
-        System.out.println("Usage:");
-        System.out.println("Producer - Application will act as a Kafka Producer instance");
-        System.out.println("Stream - Application will act as a Kafka Stream instance");
-        System.out.println("Consumer - Application will act as a Kafka Producer instance");
+        logger.info("Usage:");
+        logger.info("Producer - Application will act as a Kafka Producer instance");
+        logger.info("Stream - Application will act as a Kafka Stream instance");
+        logger.info("Consumer - Application will act as a Kafka Producer instance");
     }
 
     public static void main(String[] args) throws IOException {

@@ -6,6 +6,7 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.*;
+import org.apache.log4j.Logger;
 import playscale.utilities.AvroUtility;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ import java.util.Properties;
  */
 public class EventToSignal {
 
-
+    private final Logger logger = Logger.getLogger(EventToSignal.class);
     private Properties properties;
 
     public EventToSignal(Properties properties) {

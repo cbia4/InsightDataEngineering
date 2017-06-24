@@ -4,6 +4,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.streams.kstream.Predicate;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.util.HashSet;
 
 public class CountryStore implements Predicate<Long,GenericRecord> {
 
+    private final Logger logger = Logger.getLogger(CountryStore.class);
     private HashMap<Long,HashSet<String>> userCountryStore;
     private Schema signalSchema;
 
