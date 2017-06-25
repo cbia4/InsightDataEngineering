@@ -1,11 +1,13 @@
 package playscale.extractors;
 
+import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.kstream.*;
+import org.apache.kafka.streams.kstream.KStreamBuilder;
+import org.apache.kafka.streams.kstream.KStream;
 import org.apache.log4j.Logger;
 import playscale.utilities.AvroUtility;
 
@@ -47,22 +49,24 @@ public class EventToSignal {
         CountryStore countryStore = new CountryStore("signal_schema.avsc");
 
         // Instantiate a stream builder
-        KStreamBuilder kStreamBuilder = new KStreamBuilder();
+        KStreamBuilder builder = new KStreamBuilder();
 
-        // Read from streams-event-input
-        KStream<Long, byte[]> event = kStreamBuilder.stream(consumer);
 
-        // Processor Topology
-        // filter for new countries and create signals (this includes byte encoding/decoding)
-        KStream<Long,byte[]> eventToSignals = event.map((key, value) -> new KeyValue<>(key,eventAvro.decode(value)))
-                .filter((key,value) -> countryStore.test(key,value))
-                .map((key,value) -> new KeyValue<>(key,countryStore.createNewCountrySignal(value)))
-                .map((key,value) -> new KeyValue<>(key,countrySignalAvro.encode(value)));
+        // Read from event topic and convert byte array to GenericRecord
+        KStream<Long, byte[]> eventBytes = builder.stream(consumer);
+        KStream<Long,GenericRecord> event = eventBytes.mapValues(eventAvro::decode);
+
+        // filter the event by checking if the country specified is known, if not then generate a new country signal
+        KStream<Long,byte[]> newCountry = event.filter(countryStore)
+                .mapValues(countryStore::createNewCountrySignal)
+                .mapValues(countrySignalAvro::encode);
+
 
         // Write signals to output stream
-        eventToSignals.to(producer);
+        newCountry.to(producer);
 
-        KafkaStreams streams = new KafkaStreams(kStreamBuilder, props);
+        KafkaStreams streams = new KafkaStreams(builder, props);
+
         streams.start();
 
     }
