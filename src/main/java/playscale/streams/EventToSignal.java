@@ -1,4 +1,4 @@
-package playscale.extractors;
+package playscale.streams;
 
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -8,7 +8,11 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.Predicate;
 import org.apache.log4j.Logger;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import playscale.utilities.AvroUtility;
 
 import java.io.IOException;
@@ -43,31 +47,39 @@ public class EventToSignal {
         props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.ByteArray().getClass().getName()); // Topic Value Deserializer Type
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-        AvroUtility eventAvro = new AvroUtility("event_schema.avsc");
-        AvroUtility countrySignalAvro = new AvroUtility("signal_schema.avsc");
-
-        CountryStore countryStore = new CountryStore("signal_schema.avsc");
+        AvroUtility avro = new AvroUtility("event_schema.avsc");
+        EventProcessor eventProcessor = new EventProcessor();
 
         // Instantiate a stream builder
         KStreamBuilder builder = new KStreamBuilder();
 
-
         // Read from event topic and convert byte array to GenericRecord
         KStream<Long, byte[]> eventBytes = builder.stream(consumer);
-        KStream<Long,GenericRecord> event = eventBytes.mapValues(eventAvro::decode);
+        KStream<Long,GenericRecord> event = eventBytes.mapValues(avro::decode);
 
-        // filter the event by checking if the country specified is known, if not then generate a new country signal
-        KStream<Long,byte[]> newCountry = event.filter(countryStore)
-                .mapValues(countryStore::createNewCountrySignal)
-                .mapValues(countrySignalAvro::encode);
+        // Filter to make sure event has a user id, process it, and then filter again
+        // to make sure a set of signals before publishing to signal topic
+        KStream<Long,byte[]> signals = event.filter(eventProcessor)
+                .map(eventProcessor::extractSignals)
+                .filter(new Predicate<Long, JSONObject>() {
+                    @Override
+                    public boolean test(Long tid, JSONObject obj) {
+                        JSONArray array = (JSONArray) obj.get("signals");
+                        return (array.size() > 0);
 
+                    }
+                })
+                .map((key,value) -> new KeyValue<>(key, value.toString().getBytes()));
 
-        // Write signals to output stream
-        newCountry.to(producer);
+        // write signals to output stream
+        signals.to(producer);
 
+        // create and run the stream topology
         KafkaStreams streams = new KafkaStreams(builder, props);
-
         streams.start();
+
+        // stop the streams application when SIGTERM signal received
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
 
     }
 
