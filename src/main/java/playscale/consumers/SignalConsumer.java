@@ -1,6 +1,5 @@
 package playscale.consumers;
 
-import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -18,7 +17,6 @@ public class SignalConsumer {
     private final Logger logger = Logger.getLogger(SignalConsumer.class);
     private Consumer<Long,byte[]> consumer;
     private Properties properties;
-    private AvroUtility avro;
 
     public SignalConsumer(Properties properties) throws IOException {
 
@@ -27,7 +25,6 @@ public class SignalConsumer {
         String timeout = properties.getProperty("consumer.session.timeout.ms");
         this.properties = properties;
 
-        this.avro = new AvroUtility("signal_schema.avsc");
         Properties props = new Properties();
         props.put("bootstrap.servers",servers);
         props.put("group.id", "scoring");
@@ -49,9 +46,8 @@ public class SignalConsumer {
         while (true) {
             ConsumerRecords<Long, byte[]> records = consumer.poll(pollRate);
             for (ConsumerRecord<Long, byte[]> record : records) {
-                GenericRecord r = avro.decode(record.value());
-                if(logger.isDebugEnabled())
-                    logger.debug("key: " + record.key() + ", value: " +r.toString());
+                String jsonString = new String(record.value());
+                logger.info("Signal set received: " + jsonString);
             }
         }
     }
