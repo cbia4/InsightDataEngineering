@@ -2,7 +2,7 @@ package playscale;
 
 import org.apache.log4j.Logger;
 import playscale.consumers.SignalConsumer;
-import playscale.extractors.EventToSignal;
+import playscale.streams.EventToSignal;
 import playscale.producers.EventProducer;
 
 import java.io.FileInputStream;
