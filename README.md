@@ -24,7 +24,8 @@ In the long term it will be used as the foundation to replace an online processi
 ### Configure ###
     rename config_example.properties to config.properties
     fill in all configuration options (bootstrap.servers=localhost:9092)
-    If running on an AWS cluster, drop a jar onto each instance in the cluster)
+    If running on an AWS cluster, drop a jar onto each instance in the cluster
+    Producers and Consumers should run on separate instances from Kafka Brokers (and streaming instances)
 
 ### Run the Streaming Application ###
     java -cp target/PlayScale.jar playscale.PlayScale stream
