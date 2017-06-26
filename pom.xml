@@ -40,13 +40,6 @@
             <version>0.10.2.1</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.kafka/connect-api -->
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>connect-api</artifactId>
-            <version>0.9.0.0</version>
-        </dependency>
-
 
         <dependency>
             <groupId>io.confluent</groupId>
