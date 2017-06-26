@@ -58,10 +58,6 @@ public class EventProcessor implements Predicate<Long,GenericRecord> {
             signalsArray.add(newDevice);
         }
 
-        if(signalsArray.size() > 0) {
-            System.out.println(signalsArray.toString());
-        }
-
         signalsObject.put("signals",signalsArray);
         return new KeyValue<>(key,signalsObject);
     }
