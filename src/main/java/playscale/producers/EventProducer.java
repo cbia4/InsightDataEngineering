@@ -88,27 +88,29 @@ public class EventProducer {
                     .getObject(bucket,objectKey)
                     .getObjectContent();
 
-            logger.info("Done. Download took " + ( (System.nanoTime() - iterStart) / 1000000 ) + " ms.\nDeserializing: " + objectKey);
+            logger.info("Done. Download took " + ( (System.nanoTime() - iterStart) / 1000000 ) + " ms.");
+            logger.info("Deserializing: " + objectKey);
             iterStart = System.nanoTime();
 
             // Deserialize file and return iterator
             recordIterator = avro.getRecords(recordStream);
 
-            logger.info("Done. Deserialization took " + ( (System.nanoTime() - iterStart) / 1000000 ) + " ms.\nSending Records.");
+            logger.info("Done. Deserialization took " + ( (System.nanoTime() - iterStart) / 1000000 ) + " ms.");
+            logger.info("Sending Records.");
             iterStart = System.nanoTime();
 
             long ctr = 0;
             // Send event records to Kafka brokers
             while (recordIterator.hasNext()) {
                 ctr++;
-                totalRecords++;
                 GenericRecord record = recordIterator.next();
                 long tenantId = (long) record.get("tenant_id");
                 producer.send(new ProducerRecord<>(topic,tenantId,avro.encode(record)));
             }
 
-            logger.info("Done. Sending Records took " + ( (System.nanoTime() - iterStart) / 1000000 ) + " ms.\nSent " + ctr + " Records.");
-            System.out.println();
+            logger.info("Done. Sending Records took " + ( (System.nanoTime() - iterStart) / 1000000 ) + " ms.");
+            logger.info("Sent " + ctr + " Records.");
+            totalRecords += ctr;
         }
 
         long ingestEnd = System.nanoTime();
