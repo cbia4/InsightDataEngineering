@@ -2,7 +2,7 @@
 ## Consulting Project
 
 ### Overview
-PlayScale is a plug and play tool to easily replay offline datasets and test/implement stream processing topologies
+PlayScale is a plug and play tool to easily replay offline data sets and test/implement stream processing topologies
 using Apache Kafka and Kafka Streams. The main goal for this project was to develop an ingestion and processing
 framework with Apache Kafka and Kafka Streams that scales and processes historical data quickly.
 Specifically, allowing fast replay of historical data makes it easy to optimize and enhance downstream
