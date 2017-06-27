@@ -66,11 +66,6 @@ public class EventProcessor implements Predicate<Long,GenericRecord> {
             JSONObject tags = new JSONObject();
             tags.put("ip_tags",ipTags);
             signalsArray.add(tags);
-
-            if(ipTags.size() > 1) {
-                System.out.println(ipTags.toString());
-            }
-
         }
 
         signalsObject.put("signals",signalsArray);
