@@ -17,7 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by colinbiafore on 6/16/17.
+ * A utility class to interact with Amazon S3
+ * Security Credentials are configured in the config.properties file
+ * and passed to the S3Utility constructor
  */
 public class S3Utility {
 
@@ -37,10 +39,12 @@ public class S3Utility {
     }
 
 
+    // use the s3 client to download an object
     public S3Object getObject(String bucket, String key) { return client.getObject(bucket,key); }
 
     public void shutdown() { client.shutdown(); }
 
+    // get a set of keys in an S3 bucket at a specified prefix
     public List<String> getKeyList(String bucket, String prefix) {
 
         List<S3ObjectSummary> summaries = null;
@@ -64,7 +68,7 @@ public class S3Utility {
             System.exit(-1);
         }
 
-        // filter out any random objects that are not in avro format
+        // filter out any objects that are not in avro format
         String avroFileExtension = "part.avro";
         for(S3ObjectSummary objectSummary : summaries) {
             if(objectSummary.getKey().endsWith(avroFileExtension))
