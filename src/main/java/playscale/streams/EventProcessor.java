@@ -12,6 +12,14 @@ import org.json.simple.JSONObject;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ * This class is responsible for taking in events as they are consumed by Kafka Streams
+ * from the "event" topic, and turned into a JSON string containing a set of "signals".
+ * This class implements the Predicate interface to take advantage of Java 8 lambda syntax.
+ * In the EventToSignal stream class, by passing an instance of this class to the filter method,
+ * "test" is invoked automatically with the key and value passed in.
+ */
+
 public class EventProcessor implements Predicate<Long,GenericRecord> {
 
     private HashMap<Long,HashSet<String>> userCountries;
