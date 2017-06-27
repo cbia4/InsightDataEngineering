@@ -13,3 +13,4 @@ src/main/java/playscale/streams/CountryStore.java
 src/main/java/playscale/streams/EventSignalStream.java
 dependency-reduced-pom.xml
 log4j-application*
+PlayScale.zip
