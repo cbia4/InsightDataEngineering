@@ -5,7 +5,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.log4j.Logger;
-import playscale.utilities.AvroUtility;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -27,7 +26,7 @@ public class SignalConsumer {
 
         Properties props = new Properties();
         props.put("bootstrap.servers",servers);
-        props.put("group.id", "scoring");
+        props.put("group.id", "signals");
         props.put("enable.auto.commit", "true");
         props.put("auto.commit.interval.ms", "1000");
         props.put("session.timeout.ms",timeout);
@@ -47,7 +46,7 @@ public class SignalConsumer {
             ConsumerRecords<Long, byte[]> records = consumer.poll(pollRate);
             for (ConsumerRecord<Long, byte[]> record : records) {
                 String jsonString = new String(record.value());
-                logger.info("Signal set received: " + jsonString);
+                logger.info("Signal received: " + jsonString);
             }
         }
     }
