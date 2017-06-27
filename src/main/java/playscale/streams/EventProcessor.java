@@ -1,6 +1,7 @@
 package playscale.streams;
 
 
+import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Predicate;
@@ -28,7 +29,7 @@ public class EventProcessor implements Predicate<Long,GenericRecord> {
         return true; // allow this event to have signals extracted
     }
 
-
+    // process an event record into a signal record
     public KeyValue<Long,JSONObject> extractSignals(Long key, GenericRecord value) {
 
         Long userId = (Long) value.get("user_id");
@@ -44,13 +45,14 @@ public class EventProcessor implements Predicate<Long,GenericRecord> {
         signalsObject.put("device_id",deviceId);
         signalsObject.put("session_id",value.get("session_id"));
 
+        // create new country signal
         if(isNewCountry(userId,country)) {
-            // create new country signal
             JSONObject newCountry = new JSONObject();
             newCountry.put("new_country",country);
             signalsArray.add(newCountry);
         }
 
+        // create new device signal
         if(isNewDevice(userId,deviceId)) {
             // create new device signal
             JSONObject newDevice = new JSONObject();
@@ -58,10 +60,41 @@ public class EventProcessor implements Predicate<Long,GenericRecord> {
             signalsArray.add(newDevice);
         }
 
+        // Create ip_tag signal
+        JSONArray ipTags = getIpTags(value);
+        if(ipTags != null) {
+            JSONObject tags = new JSONObject();
+            tags.put("ip_tags",ipTags);
+            signalsArray.add(tags);
+
+            if(ipTags.size() > 1) {
+                System.out.println(ipTags.toString());
+            }
+
+        }
+
         signalsObject.put("signals",signalsArray);
         return new KeyValue<>(key,signalsObject);
     }
 
+    // extract a set of iptags from the event record
+    private JSONArray getIpTags(GenericRecord record) {
+        GenericRecord requestContext = (GenericRecord) record.get("request_context");
+        GenericData.Array<GenericData.EnumSymbol> tagArray =
+                (GenericData.Array<GenericData.EnumSymbol>) requestContext.get("ip_tags");
+
+        // if there are no ip_tags
+        if (tagArray.size() < 1) return null;
+
+        JSONArray ipTags = new JSONArray();
+        for(int i = 0; i < tagArray.size(); i++) {
+            ipTags.add(tagArray.get(i).toString());
+        }
+
+        return ipTags;
+    }
+
+    // extract the country iso code from the event record
     private String getCountry(GenericRecord record) {
         GenericRecord requestContext = (GenericRecord) record.get("request_context");
         GenericRecord ipData = (GenericRecord) requestContext.get("ip_data");
@@ -69,6 +102,7 @@ public class EventProcessor implements Predicate<Long,GenericRecord> {
         return isoCode != null ? isoCode.toString() : null;
     }
 
+    // check if the country io code is listed in the user's set of known countries
     private boolean isNewCountry(Long userId, String country) {
 
         if (country == null) return false;
@@ -90,6 +124,7 @@ public class EventProcessor implements Predicate<Long,GenericRecord> {
         return false;
     }
 
+    // check if the device is listed in the user's set of known devices
     private boolean isNewDevice(Long userId, Long deviceId) {
 
         if (deviceId == null) return false;
