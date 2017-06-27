@@ -13,7 +13,11 @@ import java.util.Properties;
 
 
 /**
- * Created by colinbiafore on 6/8/17.
+ * This is the driver class for PlayScale.
+ * Users should specify whether to run PlayScale as a producer, stream, or user
+ * Users should configure the application in config.properties
+ * Some configurations are set to a default, others will prevent the application from running (AWS Credentials)
+ *
  */
 public class PlayScale {
 
