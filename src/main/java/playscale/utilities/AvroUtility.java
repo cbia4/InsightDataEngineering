@@ -18,7 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Created by colinbiafore on 6/8/17.
+ * A utility class that can deserialize a set of records in avro format,
+ * as well as encode and decode generic records to and from byte arrays
  */
 public class AvroUtility {
 
