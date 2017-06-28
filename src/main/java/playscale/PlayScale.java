@@ -1,7 +1,7 @@
 package playscale;
 
 import org.apache.log4j.Logger;
-import playscale.consumers.SignalConsumer;
+import playscale.consumers.SignalConsumerGroup;
 import playscale.streams.EventToSignal;
 import playscale.producers.EventProducer;
 
@@ -65,12 +65,12 @@ public class PlayScale {
 
         else if(appType.toUpperCase().equals(CONSUMER)) {
             logger.info("Starting Consumer instance.");
-            SignalConsumer signalConsumer = new SignalConsumer(properties);
-            signalConsumer.run();
+            SignalConsumerGroup consumerGroup = new SignalConsumerGroup(properties);
+            consumerGroup.run();
         }
 
         else {
-            logger.error("No option: " + appType);
+            logger.error("No option available: " + appType);
             printUsage();
             System.exit(0);
         }
