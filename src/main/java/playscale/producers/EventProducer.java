@@ -13,7 +13,10 @@ import org.apache.log4j.Logger;
 import playscale.utilities.AvroUtility;
 import playscale.utilities.S3Utility;
 
-
+/**
+ * This class is designed to pull a set of files from Amazon S3 (Specified in config.properties)
+ * and publish them to a kafka topic
+ */
 public class EventProducer {
 
     private final Logger logger = Logger.getLogger(EventProducer.class);
