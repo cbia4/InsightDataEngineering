@@ -35,7 +35,7 @@ public class SignalConsumerGroup {
 
         List<SignalConsumer> consumers = new ArrayList<>();
         for(int i = 0; i < numConsumers; i++) {
-            SignalConsumer consumer = new SignalConsumer(configProperties);
+            SignalConsumer consumer = new SignalConsumer(i,configProperties);
             consumers.add(consumer);
             executor.submit(consumer);
         }
