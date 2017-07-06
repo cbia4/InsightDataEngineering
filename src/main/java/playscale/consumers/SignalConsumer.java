@@ -23,9 +23,10 @@ public class SignalConsumer implements Runnable {
     private final Logger logger = Logger.getLogger(SignalConsumer.class);
     private final KafkaConsumer<Long,byte[]> consumer;
     private final List<String> topics;
+    private final int id;
 
-    public SignalConsumer(Properties configProperties) {
-
+    public SignalConsumer(int id, Properties configProperties) {
+        this.id = id;
         this.topics = Arrays.asList(configProperties.getProperty("consumer.topic"));
         String servers = configProperties.getProperty("consumer.bootstrap.servers","localhost:9092");
         String groupId = configProperties.getProperty("consumer.group.id");
@@ -35,6 +36,9 @@ public class SignalConsumer implements Runnable {
         props.put("group.id",groupId);
         props.put("key.deserializer", LongDeserializer.class.getName());
         props.put("value.deserializer", ByteArrayDeserializer.class.getName());
+
+        // this allows new consumers under a new group id to "replay" the signal topic
+        props.put("auto.offset.reset","earliest");
 
         // commit offset every second to reduce duplicate records being processed (in the event of a consumer crash)
         props.put("enable.auto.commit", "true");
@@ -49,15 +53,21 @@ public class SignalConsumer implements Runnable {
     // get records from the specified topic until a WakeupException is thrown from the SignalConsumerGroup
     @Override
     public void run() {
+
+        long recordsProcessed = 0;
+        long start = System.nanoTime();
+
         try {
             consumer.subscribe(topics);
 
             while(true) {
                 ConsumerRecords<Long,byte[]> records = consumer.poll(Long.MAX_VALUE);
                 for(ConsumerRecord<Long,byte[]> record : records) {
-                    String jsonString = new String(record.value());
-                    logger.info("Signal received: " + jsonString);
+                    recordsProcessed++;
                 }
+
+                logger.info(this.id + " - Total records received: " + recordsProcessed);
+                logger.info(this.id + " - Time: " + ((System.nanoTime() - start) / 1000000) + " ms.");
             }
         } catch (WakeupException e) {
             // ignore for shutdown
