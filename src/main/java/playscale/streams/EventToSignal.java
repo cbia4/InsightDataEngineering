@@ -37,7 +37,7 @@ public class EventToSignal {
         String servers = properties.getProperty("stream.bootstrap.servers");
         String consumer = properties.getProperty("stream.topic.consumer");
         String producer = properties.getProperty("stream.topic.producer");
-        String id = properties.getProperty("streams.application.id");
+        String id = properties.getProperty("stream.application.id");
 
 
         // Set Stream Properties
