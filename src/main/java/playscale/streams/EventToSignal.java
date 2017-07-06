@@ -37,11 +37,12 @@ public class EventToSignal {
         String servers = properties.getProperty("stream.bootstrap.servers");
         String consumer = properties.getProperty("stream.topic.consumer");
         String producer = properties.getProperty("stream.topic.producer");
+        String id = properties.getProperty("streams.application.id");
 
 
         // Set Stream Properties
         Properties props = new Properties();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "event-processing"); // Required
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG,id); // Required
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,servers); // Required
         props.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.Long().getClass().getName());
         props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.ByteArray().getClass().getName()); // Topic Value Deserializer Type
